@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multimodal Analyzer — AI Vision Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js" onerror="window.heic2any=null"></script>
+  <style>
+    :root {
+      --green: #1a9e72;
+      --green-dark: #0f6e50;
+      --green-light: #e0f5ee;
+      --green-mid: #9fe0cb;
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: #e2e0d8;
+      --text: #1a1a18;
+      --text2: #5a5a55;
+      --text3: #9a9a94;
+      --red: #e24b4a;
+      --red-bg: #fdf0f0;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--green);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 18px; height: 18px; fill: white; }
+
+    .nav-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--green-mid);
+    }
+
+    /* ── LAYOUT ── */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 2rem;
+      gap: 1.5rem;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+    }
+
+    .panel-header .step-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--green);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .panel-header h2 {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .panel-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+    /* ── UPLOAD ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+      flex: 1;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--green-light);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .upload-icon svg { width: 24px; height: 24px; stroke: var(--green); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    .upload-zone h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+    .upload-zone p { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+
+    .upload-btn-inner {
+      display: inline-block;
+      padding: 7px 18px;
+      background: var(--green);
+      color: white;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .upload-btn-inner:hover { background: var(--green-dark); }
+
+    .format-tags { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .ftag { font-size: 11px; font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; color: var(--text3); }
+
+    /* ── PREVIEW ── */
+    .preview-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .preview-image-wrap {
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      max-height: 320px;
+      overflow: hidden;
+    }
+
+    .preview-image-wrap img {
+      max-width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+    }
+
+    .preview-meta {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+
+    .preview-meta-info { display: flex; flex-direction: column; gap: 2px; }
+    .preview-meta-name { font-size: 13px; font-weight: 500; }
+    .preview-meta-sub { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+    .remove-btn {
+      background: var(--red-bg);
+      border: 1px solid #f5c0c0;
+      color: var(--red);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .remove-btn:hover { background: var(--red); color: white; border-color: var(--red); }
+
+    /* ── QUERY PANEL ── */
+    .query-panel { grid-column: 1 / -1; }
+
+    .question-wrap { display: flex; gap: 10px; }
+
+    textarea {
+      flex: 1;
+      min-height: 80px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color 0.2s;
+      line-height: 1.6;
+    }
+
+    textarea:focus { outline: none; border-color: var(--green); background: white; }
+    textarea::placeholder { color: var(--text3); }
+
+    .analyze-btn {
+      padding: 0 24px;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+
+    .analyze-btn:hover:not(:disabled) { background: var(--green-dark); }
+    .analyze-btn:active:not(:disabled) { transform: scale(0.98); }
+    .analyze-btn:disabled { background: #c5c5be; cursor: not-allowed; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 12px;
+      cursor: pointer;
+      color: var(--text2);
+      background: var(--surface2);
+      transition: all 0.15s;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .chip:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
+
+    /* ── RESULT ── */
+    .result-panel { grid-column: 1 / -1; display: none; }
+
+    .result-body {
+      padding: 1.25rem;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .result-meta {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+    }
+
+    .result-meta span { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+    .copy-btn {
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      background: white;
+      color: var(--text2);
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { background: var(--green); color: white; border-color: var(--green); }
+
+    /* ── HOW IT WORKS ── */
+    .hiw { grid-column: 1 / -1; }
+
+    .hiw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1.25rem; }
+
+    .hiw-step {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hiw-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    .hiw-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .hiw-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+
+    /* ── STATUS ── */
+    .status-bar {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-bar.error { background: var(--red-bg); color: var(--red); border: 1px solid #f5c0c0; display: flex; }
+    .status-bar.info { background: var(--green-light); color: var(--green-dark); border: 1px solid var(--green-mid); display: flex; }
+    .status-bar.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid #fcd34d; display: flex; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.4s infinite;
+    }
+    @keyframes dots {
+      0%   { content: ''; }
+      33%  { content: '.'; }
+      66%  { content: '..'; }
+      100% { content: '...'; }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 12px;
+      color: var(--text3);
+      border-top: 1px solid var(--border);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── API KEY ── */
+    .api-key-section {
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .api-key-section label { font-size: 12px; color: var(--text2); white-space: nowrap; font-weight: 500; }
+
+    .api-key-section input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      background: white;
+      color: var(--text);
+    }
+
+    .api-key-section input:focus { outline: none; border-color: var(--green); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      main { grid-template-columns: 1fr; padding: 1rem; }
+      .query-panel, .result-panel, .hiw { grid-column: 1; }
+      .hiw-grid { grid-template-columns: 1fr; }
+      .question-wrap { flex-direction: column; }
+      .analyze-btn { width: 100%; justify-content: center; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    VisionLens
+  </a>
+  <span class="nav-badge">Multimodal LLM Demo</span>
+</nav>
+
+<main>
+
+  <!-- Upload Panel -->
+  <div class="panel" id="uploadPanel">
+    <div class="panel-header">
+      <div class="step-dot">1</div>
+      <h2>Upload Image</h2>
+    </div>
+    <div class="panel-body">
+
+      <div class="api-key-section">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off">
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        </div>
+        <h3>Drop your image here</h3>
+        <p>or click to browse files</p>
+        <span class="upload-btn-inner">Choose File</span>
+        <div class="format-tags">
+          <span class="ftag">JPG</span>
+          <span class="ftag">PNG</span>
+          <span class="ftag">WEBP</span>
+          <span class="ftag">GIF</span>
+          <span class="ftag">HEIC</span>
+        </div>
+      </div>
+
+      <input type="file" id="fileInput" accept="image/*,.heic,.heif" style="display:none">
+
+      <div class="preview-card" id="previewCard">
+        <div class="preview-image-wrap">
+          <img id="previewImg" src="" alt="Preview">
+        </div>
+        <div class="preview-meta">
+          <div class="preview-meta-info">
+            <div class="preview-meta-name" id="previewName"></div>
+            <div class="preview-meta-sub" id="previewSub"></div>
+          </div>
+          <button class="remove-btn" onclick="removeFile()">✕ Remove</button>
+        </div>
+      </div>
+
+      <div class="status-bar" id="convertStatus">
+        <div class="spinner" style="border-top-color: var(--amber);"></div>
+        <span>Converting HEIC to JPEG<span class="loading-dots"></span></span>
+      </div>
+
+      <div class="status-bar" id="uploadError"></div>
+    </div>
+  </div>
+
+  <!-- Info Panel -->
+  <div class="panel hiw" style="grid-column: 2;">
+    <div class="panel-header">
+      <div class="step-dot" style="background: #5a5a55;">?</div>
+      <h2>How multimodal LLMs work</h2>
+    </div>
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="hiw-num">01 / Vision encoder</div>
+        <div class="hiw-title">Image → Embeddings</div>
+        <div class="hiw-desc">Your image is split into small patches. Each patch is converted to a high-dimensional vector (embedding) using a vision transformer (ViT).</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">02 / Cross-modal fusion</div>
+        <div class="hiw-title">Image + Text → Unified tokens</div>
+        <div class="hiw-desc">The image embeddings and your text question are projected into the same vector space and concatenated into a single sequence of tokens.</div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-num">03 / Language generation</div>
+        <div class="hiw-title">Tokens → Answer</div>
+        <div class="hiw-desc">The transformer decoder attends over both image and text tokens together using self-attention, generating your answer word by word.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Query Panel -->
+  <div class="panel query-panel">
+    <div class="panel-header">
+      <div class="step-dot">2</div>
+      <h2>Ask a Question</h2>
+    </div>
+    <div class="panel-body">
+      <div class="chips">
+        <div class="chip" onclick="setQuery('What is shown in this image? Describe it in detail.')">What is shown?</div>
+        <div class="chip" onclick="setQuery('Extract all text visible in this image.')">Extract text</div>
+        <div class="chip" onclick="setQuery('What are the key data points or numbers visible here?')">Key numbers</div>
+        <div class="chip" onclick="setQuery('Identify any charts or diagrams and explain what they show.')">Explain charts</div>
+        <div class="chip" onclick="setQuery('Describe this image for someone who cannot see it.')">Accessibility desc</div>
+        <div class="chip" onclick="setQuery('What objects are present and where are they positioned?')">Object detection</div>
+      </div>
+      <div class="question-wrap">
+        <textarea id="queryInput" placeholder="Type your question about the image..."></textarea>
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyze()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Analyze
+        </button>
+      </div>
+      <div class="status-bar" id="analyzeStatus"></div>
+    </div>
+  </div>
+
+  <!-- Result Panel -->
+  <div class="panel result-panel" id="resultPanel">
+    <div class="panel-header">
+      <div class="step-dot">3</div>
+      <h2>AI Analysis Result</h2>
+    </div>
+    <div class="result-body" id="resultBody"></div>
+    <div class="result-meta">
+      <span id="resultMeta"></span>
+      <button class="copy-btn" onclick="copyResult()">Copy result</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>Built with Claude claude-sonnet-4 · Multimodal LLM Research Demo · MNIT Jaipur</footer>
+
+<script>
+  let imageData = null;
+  let imageMediaType = null;
+
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput  = document.getElementById('fileInput');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+
+  // Upload zone interactions
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  document.getElementById('queryInput').addEventListener('input', updateBtn);
+
+  function isHeic(file) {
+    return ['image/heic','image/heif'].includes(file.type) ||
+      /\.(heic|heif)$/i.test(file.name);
+  }
+
+  function getMediaType(file) {
+    if (file.type && file.type.startsWith('image/') && !isHeic(file)) return file.type;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    return { jpg:'image/jpeg', jpeg:'image/jpeg', png:'image/png', gif:'image/gif', webp:'image/webp' }[ext] || 'image/jpeg';
+  }
+
+  async function handleFile(file) {
+    clearStatus('uploadError');
+    clearStatus('convertStatus');
+    let blob = file;
+
+    if (isHeic(file)) {
+      if (!window.heic2any) {
+        showStatus('uploadError', 'error', 'HEIC conversion library not available. Please export the photo as JPEG from your phone and re-upload.');
+        return;
+      }
+      showStatus('convertStatus', 'warn', '');
+      document.getElementById('convertStatus').style.display = 'flex';
+      try {
+        blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.88 });
+        document.getElementById('convertStatus').style.display = 'none';
+        imageMediaType = 'image/jpeg';
+      } catch(e) {
+        document.getElementById('convertStatus').style.display = 'none';
+        showStatus('uploadError', 'error', 'HEIC conversion failed. Please export the photo as JPEG from your phone.');
+        return;
+      }
+    } else {
+      imageMediaType = getMediaType(file);
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      imageData = dataUrl.split(',')[1];
+      document.getElementById('previewImg').src = dataUrl;
+      document.getElementById('previewName').textContent = file.name;
+      document.getElementById('previewSub').textContent =
+        (blob.size / 1024).toFixed(1) + ' KB · ' + imageMediaType + (isHeic(file) ? ' (converted)' : '');
+      document.getElementById('previewCard').style.display = 'flex';
+      uploadZone.style.display = 'none';
+      updateBtn();
+    };
+    reader.onerror = () => showStatus('uploadError', 'error', 'Could not read the file. Try another image.');
+    reader.readAsDataURL(blob);
+  }
+
+  function removeFile() {
+    imageData = null; imageMediaType = null;
+    document.getElementById('previewCard').style.display = 'none';
+    uploadZone.style.display = 'block';
+    fileInput.value = '';
+    document.getElementById('resultPanel').style.display = 'none';
+    clearStatus('uploadError');
+    updateBtn();
+  }
+
+  function setQuery(q) {
+    document.getElementById('queryInput').value = q;
+    updateBtn();
+  }
+
+  function updateBtn() {
+    const hasFile  = !!imageData;
+    const hasQuery = document.getElementById('queryInput').value.trim().length > 0;
+    const hasKey   = document.getElementById('apiKey').value.trim().length > 10;
+    analyzeBtn.disabled = !(hasFile && hasQuery && hasKey);
+  }
+
+  document.getElementById('apiKey').addEventListener('input', updateBtn);
+
+  function showStatus(id, type, msg) {
+    const el = document.getElementById(id);
+    el.className = 'status-bar ' + type;
+    if (msg) el.innerHTML = msg;
+  }
+
+  function clearStatus(id) {
+    const el = document.getElementById(id);
+    el.className = 'status-bar';
+    el.style.display = 'none';
+  }
+
+  async function analyze() {
+    const query  = document.getElementById('queryInput').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!imageData || !query || !apiKey) return;
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.innerHTML = '<div class="spinner"></div> Analyzing...';
+    document.getElementById('resultPanel').style.display = 'none';
+    clearStatus('analyzeStatus');
+
+    const t0 = Date.now();
+
+    try {
+      const res = await fetch('/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: apiKey,
+          payload: {
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            system: 'You are a helpful multimodal AI assistant. Analyze the provided image and answer the user\'s question clearly, specifically, and helpfully. Be detailed but concise.',
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: imageMediaType, data: imageData } },
+                { type: 'text', text: query }
+              ]
+            }]
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+
+      const text    = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+      const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+      const tokens  = data.usage ? `${data.usage.input_tokens} in / ${data.usage.output_tokens} out tokens` : '';
+
+      document.getElementById('resultBody').textContent = text;
+      document.getElementById('resultMeta').textContent = `${elapsed}s · ${tokens} · claude-sonnet-4`;
+      document.getElementById('resultPanel').style.display = 'flex';
+      document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      let msg = err.message || 'Unknown error';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        msg = '⚠ Could not reach the server. Make sure start.py is running in your terminal.';
+      } else if (msg.includes('401') || msg.includes('invalid x-api-key') || msg.includes('authentication')) {
+        msg = '⚠ Invalid API key. Get yours at console.anthropic.com';
+      } else {
+        msg = '⚠ ' + msg;
+      }
+      showStatus('analyzeStatus', 'error', msg);
+      document.getElementById('analyzeStatus').style.display = 'flex';
+    } finally {
+      analyzeBtn.disabled = false;
+      analyzeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Analyze`;
+      updateBtn();
+    }
+  }
+
+  function copyResult() {
+    const text = document.getElementById('resultBody').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = 'Copy result', 2000);
+    });
+  }
+</script>
+</body>
+</html>
