@@ -23,7 +23,7 @@ VisionLens combines computer vision and large language models (LLMs) to perform 
 
 ## Demo Preview
 
-Add screenshots here after uploading them to your repository.
+screenshots of Home Screen/UI
 
 
 ![Home Screen](ss/home.png)
