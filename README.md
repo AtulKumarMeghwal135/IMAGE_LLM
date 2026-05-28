@@ -1,80 +1,170 @@
-# VisionLens — Multimodal LLM Demo
-### MNIT Jaipur · Research Internship Project
+# VisionLens — Multimodal AI Image Analyzer
+
+An interactive multimodal AI web application that allows users to upload images and ask natural language questions about visual content using advanced vision-language models.
+
+VisionLens combines computer vision and large language models (LLMs) to perform image understanding, OCR, object detection, accessibility descriptions, chart interpretation, and contextual reasoning through a clean and responsive interface.
 
 ---
 
-## What this app does
-Upload any image (JPG, PNG, WEBP, GIF, or iPhone HEIC photos) and ask questions about it.
-The app uses Claude's multimodal API to analyze the image using vision + language together.
+## Features
+
+* Upload and analyze images using AI
+* Supports JPG, PNG, WEBP, GIF, and HEIC formats
+* Automatic HEIC to JPEG conversion for iPhone photos
+* Ask natural language questions about uploaded images
+* OCR and text extraction from images
+* Chart and diagram interpretation
+* Object identification and spatial understanding
+* Accessibility-focused image descriptions
+* Responsive modern UI
+* Real-time AI analysis results
 
 ---
 
-## How to run (IMPORTANT)
+## Demo Preview
 
-You CANNOT just double-click index.html — browsers block API calls from local files (CORS policy).
-You must run it through a local server. Here are 3 easy ways:
+Add screenshots here after uploading them to your repository.
 
----
-
-### Option 1 — Python (Recommended, easiest)
-If you have Python installed (check with `python --version`):
+```md
+![Home Screen](ss/home.png)
+![function](ss/about.png)
+![panel](ss/prompt_panel.png)
 
 ```
-# In terminal / command prompt, navigate to this folder:
-cd path/to/multimodal-analyzer
-
-# Then run:
-python start.py
-```
-
-The browser will open automatically at http://localhost:8000
-
----
-
-### Option 2 — VS Code Live Server
-1. Open the folder in VS Code
-2. Install the "Live Server" extension (by Ritwick Dey)
-3. Right-click index.html → "Open with Live Server"
-
----
-
-### Option 3 — Node.js
-```
-npx serve .
-```
-Then open http://localhost:3000
-
----
-
-## Getting an API Key
-1. Go to https://console.anthropic.com
-2. Sign up / log in
-3. Click "API Keys" → "Create Key"
-4. Paste it into the app's API Key field
-
-Note: New accounts get free credits to start with.
-
----
-
-## How Multimodal LLMs work (for your statement of interest)
-
-1. **Vision Encoder** — The image is split into patches (e.g. 16x16 pixels each).
-   Each patch is converted to a vector embedding using a Vision Transformer (ViT).
-
-2. **Cross-modal Fusion** — The image embeddings and text token embeddings are
-   projected into the same vector space and concatenated into one sequence.
-
-3. **Language Generation** — The transformer decoder attends over both image and
-   text tokens using self-attention, generating the answer token by token.
 
 ---
 
 ## Tech Stack
-- HTML / CSS / Vanilla JS (no framework needed)
-- Anthropic Claude API (claude-sonnet-4)
-- heic2any library for iPhone photo conversion
-- Python http.server for local hosting
+
+### Frontend
+
+* HTML5
+* CSS3
+* Vanilla JavaScript
+
+### Backend
+
+* Python
+* `http.server`
+
+### AI & APIs
+
+* Anthropic Claude API
+* Multimodal Vision-Language Model
+
+### Libraries
+
+* heic2any
 
 ---
 
-Built for MNIT Jaipur CS Department — Multimodal LLM Research Internship Application
+## Project Architecture
+
+The application follows a lightweight client-server architecture:
+
+1. Users upload an image through the frontend
+2. Images are converted to Base64 format
+3. The Python proxy server securely forwards requests
+4. Claude Vision API processes image + text together
+5. AI-generated responses are displayed in real time
+
+---
+
+## How Multimodal AI Works
+
+### 1. Vision Encoding
+
+Images are divided into patches and converted into embeddings using a Vision Transformer (ViT).
+
+### 2. Cross-Modal Fusion
+
+Visual embeddings and text embeddings are merged into a shared representation space.
+
+### 3. Language Generation
+
+The transformer attends to both image and text tokens to generate contextual responses.
+
+---
+
+## Installation & Setup
+
+### Clone the repository
+
+```bash
+git clone https://github.com/your-username/IMAGE_LLM.git
+cd IMAGE_LLM
+```
+
+---
+
+### Run the application
+
+```bash
+python start.py
+```
+
+Then open:
+
+```txt
+http://localhost:8000
+```
+
+---
+
+## Getting an API Key
+
+1. Visit https://console.anthropic.com
+2. Create an API key
+3. Paste the key into the application interface
+
+---
+
+## Folder Structure
+
+```txt
+IMAGE_LLM/
+│
+├── index.html
+├── start.py
+├── README.md
+└── screenshots/
+```
+
+---
+
+## Future Improvements
+
+* Multiple image uploads
+* PDF and document analysis
+* Streaming AI responses
+* Voice-based interaction
+* Model selection (Claude / GPT / Gemini)
+* Cloud deployment support
+* Authentication system
+
+---
+
+## Learning Outcomes
+
+This project helped explore:
+
+* Multimodal AI systems
+* Vision-language model workflows
+* API integration
+* Frontend-backend communication
+* Image preprocessing pipelines
+* Responsive UI/UX design
+
+---
+
+## Author
+
+Atul Kumar Meghwal
+
+GitHub: https://github.com/AtulKumarMeghwal135
+
+---
+
+## License
+
+This project is open-source and available under the MIT License.
