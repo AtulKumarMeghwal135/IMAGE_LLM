@@ -25,12 +25,12 @@ VisionLens combines computer vision and large language models (LLMs) to perform 
 
 Add screenshots here after uploading them to your repository.
 
-```md
+
 ![Home Screen](ss/home.png)
 ![function](ss/about.png)
 ![panel](ss/prompt_panel.png)
 
-```
+
 
 ---
 
